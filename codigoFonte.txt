@@ -1,0 +1,19 @@
+#
+# comentarios iniciam com # e vao ate o fim da linha
+#
+
+begin
+   i = 3;
+   j = 5;
+   if (i >= j-3) then
+      while = 7;
+      for = j++ or "teste \n\"df";
+   else 
+      if = else + for - total;
+   4 = 34.45-(.3);
+   34e3;
+   , != 123hsg;
+   wr23 = 23dkfj;
+end
+
+. 34 kfhd )( # coisas estranhas / para testes

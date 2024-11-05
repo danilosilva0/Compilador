@@ -15,7 +15,7 @@ class TOKEN (IntEnum):
     STRING = 12 
     VIRGULA = 13
     WRITE = 14
-    NUM = 15
+    NUMERO = 15
     ABRE_CHAVES = 16
     FECHA_CHAVES = 17
     OR = 18
@@ -51,7 +51,7 @@ class TOKEN (IntEnum):
             12: "string",
             13: ",",
             14: "write",
-            15: "num",
+            15: "numero",
             16: "{",
             17: "}",
             18: "or",
@@ -76,7 +76,6 @@ class TOKEN (IntEnum):
     def reservada(cls, lexema):
         reservadas = {
             'if': TOKEN.IF,
-            'while': TOKEN.WHILE,
             'begin': TOKEN.BEGIN,
             'then': TOKEN.THEN,
             'end': TOKEN.END,
