@@ -6,7 +6,7 @@
 <else_opc> -> LAMBDA | else <com> 
 <leitura> -> read ( string , ident ) ;
 <impressao> -> write ( <lista_out> ) ;
-<lista_outs> -> <out><restoOut>
+<lista_out> -> <out><restoOut>
 <restoOut> -> LAMBDA | ,<out><restoOut>
 <out> -> num | ident | string
 <bloco> -> { <calculo> }
