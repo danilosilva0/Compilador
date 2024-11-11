@@ -25,7 +25,7 @@ class Sintatico:
                 msg = lexema
             else:
                 msg = msgTokenLido
-            print(f'Era esperado {msgTokenAtual} mas veio {msg}')
+            print(f'Era esperado "{msgTokenAtual}" mas veio "{msg}"')
             raise Exception
 
     def testaLexico(self):
