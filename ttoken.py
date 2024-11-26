@@ -15,7 +15,7 @@ class TOKEN (IntEnum):
     STRING = 12 
     VIRGULA = 13
     WRITE = 14
-    NUMERO = 15
+    INT = 15 
     ABRE_CHAVES = 16
     FECHA_CHAVES = 17
     OR = 18
@@ -33,6 +33,22 @@ class TOKEN (IntEnum):
     MULTIPLICACAO = 30
     EOF = 31
     ERRO = 32
+    FUNCTION = 33
+    DOIS_PONTOS = 34
+    FLOAT = 35 
+    ABRE_COLCHETES = 36
+    FECHA_COLCHETES = 37
+    LIST = 38
+    RETURN = 39 
+    WHILE = 40
+    FOR = 41
+    IN = 42
+    DO = 43 
+    RANGE = 44
+    INTVAL = 45
+    FLOATVAL = 46
+    STRVAL = 47
+    MODULO = 48 
 
     @classmethod
     def msg(cls, token):
@@ -51,7 +67,7 @@ class TOKEN (IntEnum):
             12: "string",
             13: ",",
             14: "write",
-            15: "numero",
+            15: "int",
             16: "{",
             17: "}",
             18: "or",
@@ -68,7 +84,24 @@ class TOKEN (IntEnum):
             29: "/",
             30: "*",
             31: "<eof>",
-            32: "erro"
+            32: "erro",
+            33: "function",
+            34: ":",
+            35: "float",
+            36: "[",
+            37: "]",
+            38: "list",
+            39: "return ",
+            40: "while",
+            41: "for",
+            42: "in",
+            43: "do",
+            44: "range",
+            45: "intVal",
+            46: "floatVal",
+            47: "strVal",
+            48: "%",
+
         }
         return nomes[token]
     
@@ -84,7 +117,21 @@ class TOKEN (IntEnum):
             'write': TOKEN.WRITE,
             'and': TOKEN.AND,
             'or': TOKEN.OR,
-            'not': TOKEN.NOT
+            'not': TOKEN.NOT,
+            'int': TOKEN.INT,
+            'function': TOKEN.FUNCTION,
+            'float': TOKEN.FLOAT,
+            'list': TOKEN.LIST,
+            'return': TOKEN.READ,
+            'while': TOKEN.WHILE,
+            'for': TOKEN.FOR,
+            'in': TOKEN.IN,
+            'do': TOKEN.DO,
+            'range': TOKEN.RANGE,
+            'intVal': TOKEN.INTVAL,
+            'floatVal': TOKEN.FLOATVAL,
+            'strVal': TOKEN.STRVAL,
+            
         }
         if lexema in reservadas:
             return reservadas[lexema]

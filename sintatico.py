@@ -38,11 +38,10 @@ class Sintatico:
 
 #-------- segue a gramatica -----------------------------------------
 
-    # <prog> -> begin <calculo> end
+    # <prog> -> <funcao> <RestoFuncoes>
     def prog(self):
-        self.consome(TOKEN.BEGIN)
-        self.calculo()
-        self.consome(TOKEN.END)
+        self.funcao()
+        self.restoFuncoes()
 
     # <calculo> -> LAMBDA | <com><calculo>
     def calculo(self):
@@ -93,18 +92,18 @@ class Sintatico:
         else:
             pass
 
-    # <leitura> -> read ( string , ident ) ;
+    # <leitura> -> read ( strVal , ident ) ;
     def leitura(self):
         self.consome(TOKEN.READ)
         self.consome(TOKEN.ABRE_PARENTESES)
-        self.consome(TOKEN.STRING)
+        self.consome(TOKEN.STRVAL)
         self.consome(TOKEN.VIRGULA)
         self.consome(TOKEN.IDENT)
         self.consome(TOKEN.FECHA_PARENTESES)
         self.consome(TOKEN.PONTO_VIRGULA)
 
-    # <impressao> -> write ( <lista_out> ) ;
-    def impressao(self):
+    # <escrita> -> write ( <lista_outs> ) ;
+    def escrita(self):
         self.consome(TOKEN.WRITE)
         self.consome(TOKEN.ABRE_PARENTESES)
         self.lista_out()
@@ -116,12 +115,12 @@ class Sintatico:
         self.out()
         self.restoOut()
 
-    # <restoOut> -> LAMBDA | ,<out><restoOut>
-    def restoOut(self):
+    # <restoLista_outs> -> LAMBDA | , <out> <restoLista_outs>
+    def restoLista_outs(self):
         if self.tokenLido == TOKEN.VIRGULA:
             self.consome(TOKEN.VIRGULA)
             self.out()
-            self.restoOut()
+            self.restoLista_outs()
         else:
             pass
         
