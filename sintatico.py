@@ -38,10 +38,48 @@ class Sintatico:
 
 #-------- segue a gramatica -----------------------------------------
 
-    # <prog> -> <funcao> <RestoFuncoes>
+    # <prog> -> <funcao> <restoFuncoes>
     def prog(self):
         self.funcao()
         self.restoFuncoes()
+
+    # <restoFuncoes> -> <funcao> <restoFuncoes> | LAMBDA
+    def restoFuncoes(self):
+        if self.tokenLido[0] == TOKEN.FUNCTION:
+            self.funcao()
+            self.restoFuncoes()
+        else:
+            pass
+
+    # <funcao> -> function ident ( <params> ) <tipoResultado> <corpo>
+    def funcao(self):
+        self.consome(TOKEN.FUNCTION)
+        self.consome(TOKEN.IDENT)
+        self.consome(TOKEN.ABRE_PARENTESES)
+        self.params()
+        self.consome(TOKEN.FECHA_PARENTESES)
+        self.tipoResultado()
+        self.corpo()
+
+    # <tipoResultado> -> LAMBDA | -> <tipo>
+    def tipoResultado(self):
+        if self.tokenLido[0] == TOKEN.SETA:
+            self.consome(TOKEN.SETA)
+            self.tipo()
+        else:
+            pass
+
+    # <params> -> <tipo> ident <restoParams> | LAMBDA
+    def params(self):
+        if self.tokenLido[0] == TOKEN.STRING:
+            self.tipo()
+            self.consome(TOKEN.IDENT)
+            self.restoParams()
+        else:
+            pass
+
+    # <restoParams> -> LAMBDA | , <tipo> ident <restoParams>
+        
 
     # <calculo> -> LAMBDA | <com><calculo>
     def calculo(self):
@@ -106,14 +144,14 @@ class Sintatico:
     def escrita(self):
         self.consome(TOKEN.WRITE)
         self.consome(TOKEN.ABRE_PARENTESES)
-        self.lista_out()
+        self.lista_outs()
         self.consome(TOKEN.FECHA_PARENTESES)
         self.consome(TOKEN.PONTO_VIRGULA)
 
-    # <lista_out> -> <out><restoOut>
-    def lista_out(self):
+    # <lista_outs> -> <out> <restoLista_outs>
+    def lista_outs(self):
         self.out()
-        self.restoOut()
+        self.restoLista_outs()
 
     # <restoLista_outs> -> LAMBDA | , <out> <restoLista_outs>
     def restoLista_outs(self):
@@ -123,16 +161,10 @@ class Sintatico:
             self.restoLista_outs()
         else:
             pass
-        
 
-    # <out> -> num | ident | string
+    # <out> -> <folha>
     def out(self):
-        if self.tokenLido[0] == TOKEN.NUMERO:
-            self.consome(TOKEN.NUMERO)
-        elif self.tokenLido[0] == TOKEN.IDENT:
-            self.consome(TOKEN.IDENT)
-        else:
-            self.consome(TOKEN.STRING)
+        self.folha()
 
     # <bloco> -> { <calculo> }
     def bloco(self):
@@ -187,7 +219,7 @@ class Sintatico:
 
     # <restoRel> -> LAMBDA | oprel <soma>
     def restoRel(self):
-        if self.tokenLido[0] in [TOKEN.IGUAL, TOKEN.MAIOR, TOKEN.MENOR, TOKEN.MAIOR_IGUAL, TOKEN.MENOR_IGUAL, TOKEN.DIFERENTE]:
+        if self.tokenLido[0] in TOKEN.oprel():
             self.consome(self.tokenLido[0])
             self.soma()
         else:
@@ -216,7 +248,7 @@ class Sintatico:
         self.uno()
         self.restoMult()
 
-    # <restoMult> -> LAMBDA | / <uno> <restoMult> | * <uno> <restoMult>
+    # <restoMult> -> LAMBDA | / <uno> <restoMult> | * <uno> <restoMult> | % <uno> 
     def restoMult(self):
         if self.tokenLido[0] == TOKEN.DIVISAO:
             self.consome(TOKEN.DIVISAO)
@@ -224,6 +256,10 @@ class Sintatico:
             self.restoMult()
         elif self.tokenLido[0] == TOKEN.MULTIPLICACAO:
             self.consome(TOKEN.MULTIPLICACAO)
+            self.uno()
+            self.restoMult()
+        elif self.tokenLido[0] == TOKEN.MODULO:
+            self.consome(TOKEN.MODULO)
             self.uno()
             self.restoMult()
         else:
@@ -240,13 +276,60 @@ class Sintatico:
         else:
             self.folha()
             
-    # <folha> -> num | ident | ( <exp> )
+    # <folha> -> intVal | floatVal | strVal | <call> | <lista> | ( <exp> ) 
     def folha(self):
-        if self.tokenLido[0] == TOKEN.NUMERO:
-            self.consome(TOKEN.NUMERO)
+        if self.tokenLido[0] == TOKEN.INTVAL:
+            self.consome(TOKEN.INTVAL)
+        elif self.tokenLido[0] == TOKEN.FLOATVAL:
+            self.consome(TOKEN.FLOATVAL)
+        elif self.tokenLido[0] == TOKEN.STRVAL:
+            self.consome(TOKEN.STRVAL)
+        # <call>
         elif self.tokenLido[0] == TOKEN.IDENT:
-            self.consome(TOKEN.IDENT)
+            self.call()
+        # <lista>
+        elif self.tokenLido[0] == TOKEN.IDENT:
+            self.lista()
         else:
             self.consome(TOKEN.ABRE_PARENTESES)
             self.exp()
             self.consome(TOKEN.FECHA_PARENTESES)
+
+    # <call> -> ident ( <lista_outs_opc> )
+    def call(self):
+        self.consome(TOKEN.IDENT)
+        self.consome(TOKEN.ABRE_PARENTESES)
+        self.lista_outs_opc()
+        self.consome(TOKEN.FECHA_PARENTESES)
+
+    # <lista_outs_opc> -> <lista_outs> | LAMBDA
+    def lista_outs_opc(self):
+        folha = [
+            TOKEN.INTVAL,
+            TOKEN.FLOATVAL,
+            TOKEN.STRVAL,
+            TOKEN.IDENT,
+            TOKEN.ABRE_PARENTESES
+        ]
+        if self.tokenLido[0] in folha:
+            self.lista_outs()
+        else:
+            pass
+
+    # <opcIndice> -> LAMBDA | [ <exp> <restoElem> ]
+    def opcIndice(self):
+        if self.tokenLido[0] == TOKEN.ABRE_COLCHETES:
+            self.consome(TOKEN.ABRE_COLCHETES)
+            self.exp()
+            self.restoElem()
+            self.consome(TOKEN.FECHA_COLCHETES)
+        else:
+            pass
+
+    # <restoElem> -> LAMBDA | : <exp>
+    def restoElem(self):
+        if self.tokenLido[0] == TOKEN.DOIS_PONTOS:
+            self.consome(TOKEN.DOIS_PONTOS)
+            self.exp()
+        else:
+            pass

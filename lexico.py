@@ -71,14 +71,20 @@ class Lexico:
                     return (TOKEN.ABRE_PARENTESES, "(", lin, col)
                 elif simbolo == ")":
                     return (TOKEN.FECHA_PARENTESES, ")", lin, col)
+                elif simbolo == "{":
+                    return (TOKEN.ABRE_CHAVES, "{", lin, col)
+                elif simbolo == "}":
+                    return (TOKEN.FECHA_CHAVES, "}", lin, col)
+                elif simbolo == "[":
+                    return (TOKEN.ABRE_COLCHETES, "[", lin, col)
+                elif simbolo == "]":
+                    return (TOKEN.FECHA_COLCHETES, "]", lin, col)
                 elif simbolo == ",":
                     return (TOKEN.VIRGULA, ",", lin, col)
                 elif simbolo == ";":
                     return (TOKEN.PONTO_VIRGULA, ";", lin, col)
                 elif simbolo == "+":
                     return (TOKEN.SOMA, "+", lin, col)
-                elif simbolo == "-":
-                    return (TOKEN.SUBTRACAO, "-", lin, col)
                 elif simbolo == "*":
                     return (TOKEN.MULTIPLICACAO, "*", lin, col)
                 elif simbolo == "/":
@@ -87,6 +93,8 @@ class Lexico:
                     return (TOKEN.ABRE_CHAVES, "{", lin, col)
                 elif simbolo == "}":
                     return (TOKEN.FECHA_CHAVES, "}", lin, col)
+                elif simbolo == "-":
+                    estado = 9  # - ou ->
                 elif simbolo == "<":
                     estado = 5  # < ou <=
                 elif simbolo == ">":
@@ -189,6 +197,13 @@ class Lexico:
                     self.ungetchar(simbolo)  # eu volto o "ponteiro" pra posicao que eu encontrei a !
                     return (TOKEN.ERRO, lexema, lin, col)  # retorno o ! dizendo que ele é um erro
 
+            elif estado == 9:
+                if simbolo == '>':
+                    lexema += simbolo
+                    return (TOKEN.SETA, lexema, lin, col)
+                else:
+                    self.ungetchar(simbolo)
+                    return (TOKEN.SUBTRACAO, lexema, lin, col)
             else:
                 print('BUG!!!')
 

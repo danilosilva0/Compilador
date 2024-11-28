@@ -49,6 +49,7 @@ class TOKEN (IntEnum):
     FLOATVAL = 46
     STRVAL = 47
     MODULO = 48 
+    SETA = 49
 
     @classmethod
     def msg(cls, token):
@@ -101,10 +102,22 @@ class TOKEN (IntEnum):
             46: "floatVal",
             47: "strVal",
             48: "%",
+            49: "->"
 
         }
         return nomes[token]
     
+    @classmethod
+    def oprel(cls):
+        return [
+            TOKEN.IGUAL,
+            TOKEN.MAIOR,
+            TOKEN.MENOR,
+            TOKEN.MAIOR_IGUAL,
+            TOKEN.MENOR_IGUAL,
+            TOKEN.DIFERENTE
+            ]
+
     @classmethod
     def reservada(cls, lexema):
         reservadas = {
@@ -114,6 +127,7 @@ class TOKEN (IntEnum):
             'end': TOKEN.END,
             'else': TOKEN.ELSE,
             'read': TOKEN.READ,
+            'string': TOKEN.STRING,
             'write': TOKEN.WRITE,
             'and': TOKEN.AND,
             'or': TOKEN.OR,
@@ -130,7 +144,7 @@ class TOKEN (IntEnum):
             'range': TOKEN.RANGE,
             'intVal': TOKEN.INTVAL,
             'floatVal': TOKEN.FLOATVAL,
-            'strVal': TOKEN.STRVAL,
+            'strVal': TOKEN.STRVAL
             
         }
         if lexema in reservadas:

@@ -1,5 +1,5 @@
-<prog> -> <funcao> <RestoFuncoes>
-<RestoFuncoes> -> <funcao> <RestoFuncoes> | LAMBDA
+<prog> -> <funcao> <restoFuncoes>
+<restoFuncoes> -> <funcao> <restoFuncoes> | LAMBDA
 <funcao> -> function ident ( <params> ) <tipoResultado> <corpo>
 <tipoResultado> -> LAMBDA | -> <tipo>
 <params> -> <tipo> ident <restoParams> | LAMBDA
