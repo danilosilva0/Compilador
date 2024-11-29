@@ -83,12 +83,16 @@ class Lexico:
                     return (TOKEN.VIRGULA, ",", lin, col)
                 elif simbolo == ";":
                     return (TOKEN.PONTO_VIRGULA, ";", lin, col)
+                elif simbolo == ":":
+                    return (TOKEN.DOIS_PONTOS, ":", lin, col)
                 elif simbolo == "+":
                     return (TOKEN.SOMA, "+", lin, col)
                 elif simbolo == "*":
                     return (TOKEN.MULTIPLICACAO, "*", lin, col)
                 elif simbolo == "/":
                     return (TOKEN.DIVISAO, "/", lin, col)
+                elif simbolo == "%":
+                    return (TOKEN.MOD, "%", lin, col)
                 elif simbolo == "{":
                     return (TOKEN.ABRE_CHAVES, "{", lin, col)
                 elif simbolo == "}":

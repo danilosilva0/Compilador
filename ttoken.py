@@ -48,7 +48,7 @@ class TOKEN (IntEnum):
     INTVAL = 45
     FLOATVAL = 46
     STRVAL = 47
-    MODULO = 48 
+    MOD = 48 
     SETA = 49
 
     @classmethod

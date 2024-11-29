@@ -79,11 +79,163 @@ class Sintatico:
             pass
 
     # <restoParams> -> LAMBDA | , <tipo> ident <restoParams>
-        
+    def restoParams(self):
+        if self.tokenLido[0] == TOKEN.VIRGULA:
+            self.consome(TOKEN.VIRGULA)
+            self.tipo()
+            self.consome(TOKEN.IDENT)
+            self.restoParams()
+        else:
+            pass
 
+    # <corpo> -> begin <declaracoes> <calculo> end
+    def corpo(self):
+        self.consome(TOKEN.BEGIN)
+        self.declaracoes()
+        self.calculo()
+        self.consome(TOKEN.END)
+
+    # <declaracoes> -> <declara> <declaracoes> | LAMBDA
+    def declaracoes(self):
+        if self.tokenLido[0] == TOKEN.STRING:
+            self.declara()
+            self.declaracoes()
+        else:
+            pass
+
+    # <declara> -> <tipo> <idents> ;
+    def declara(self):
+        self.tipo()
+        self.idents()
+        self.consome(TOKEN.PONTO_VIRGULA)
+
+    # <idents> -> ident <restoIdents>
+    def idents(self):
+        self.consome(TOKEN.IDENT)
+        self.restoIdents()
+
+    # <restoIdents> -> , ident <restoIdents> | LAMBDA
+    def restoIdents(self):
+        if self.tokenLido[0] == TOKEN.VIRGULA:
+            self.consome(TOKEN.VIRGULA)
+            self.consome(TOKEN.IDENT)
+            self.restoIdents()
+        else:
+            pass
+
+    # <tipo> -> string <opcLista> | int <opcLista> | float <opcLista>
+    def tipo(self):
+        if self.tokenLido[0] == TOKEN.STRING:
+            self.consome(TOKEN.STRING)
+            self.opcLista()
+        elif self.tokenLido[0] == TOKEN.INT:
+            self.consome(TOKEN.INT)
+            self.opcLista()
+        else:
+            self.consome(TOKEN.FLOAT)
+            self.opcLista()
+
+    # <opcLista> -> [ list ] | LAMBDA
+    def opcLista(self):
+        if self.tokenLido[0] == TOKEN.ABRE_COLCHETES:
+            self.consome(TOKEN.ABRE_COLCHETES)
+            self.consome(TOKEN.LIST)
+            self.consome(TOKEN.FECHA_COLCHETES)
+        else:
+            pass
+
+    # <retorna> -> return <expOpc> ;
+    def retorna(self):
+        self.consome(TOKEN.RETURN)
+        self.expOpc()
+
+    # <expOpc> -> LAMBDA | <exp>
+    def expOpc(self):
+        if self.tokenLido[0] == TOKEN.NOT:
+            self.exp()
+        else:
+            pass
+
+    # <while> -> while ( <exp> ) <com>
+    def _while_(self):
+        self.consome(TOKEN.WHILE)
+        self.consome(TOKEN.ABRE_PARENTESES)
+        self.exp()
+        self.consome(TOKEN.FECHA_PARENTESES)
+        self.com()
+
+    # <for> -> for ident in <range> do <com>
+    def _for_(self):
+        self.consome(TOKEN.FOR)
+        self.consome(TOKEN.IDENT)
+        self.consome(TOKEN.IN)
+        self.range()
+        self.consome(TOKEN.DO)
+        self.com()
+
+    # <range> -> <lista> | range ( <exp> , <exp> <opcRange> )
+    def range(self):
+        if self.tokenLido[0] == TOKEN.IDENT:
+            self.lista()
+        else:
+            self.consome(TOKEN.RANGE)
+            self.consome(TOKEN.ABRE_PARENTESES)
+            self.exp()
+            self.consome(TOKEN.VIRGULA)
+            self.exp()
+            self.opcRange()
+            self.consome(TOKEN.FECHA_PARENTESES)
+
+    # <lista> -> ident <opcIndice> | [ <elemLista> ]
+    def lista(self):
+        if self.tokenLido[0] == TOKEN.IDENT:
+            self.consome(TOKEN.IDENT)
+            self.opcIndice()
+        else:
+            self.consome(TOKEN.ABRE_COLCHETES)
+            self.elemLista()
+            self.consome(TOKEN.FECHA_COLCHETES)
+
+    # <elemLista> -> LAMBDA | <elem> <restoElemLista>
+    def elemLista(self):
+        elem = [TOKEN.INTVAL, TOKEN.FLOATVAL, TOKEN.STRVAL, TOKEN.IDENT]
+        if self.tokenLido[0] in elem:
+            self.elem()
+            self.restoElemLista()
+        else:
+            pass
+
+    # <restoElemLista> -> LAMBDA | , <elem> <restoElemLista>
+    def restoElemLista(self):
+        if self.tokenLido[0] == TOKEN.VIRGULA:
+            self.consome(TOKEN.VIRGULA)
+            self.elem()
+            self.restoElemLista()
+        else:
+            pass
+
+    # <elem> -> intVal | floatVal | strVal | ident
+    def elem(self):
+        if self.tokenLido[0] == TOKEN.INTVAL:
+            self.consome(TOKEN.INTVAL)
+        elif self.tokenLido[0] == TOKEN.FLOATVAL:
+            self.consome(TOKEN.FLOATVAL)
+        elif self.tokenLido[0] == TOKEN.STRVAL:
+            self.consome(TOKEN.STRVAL)
+        else:
+            self.consome(TOKEN.IDENT)
+
+    # <opcRange> -> , <exp> | LAMBDA
+    def opcRange(self):
+        if self.tokenLido[0] == TOKEN.VIRGULA:
+            self.consome(TOKEN.VIRGULA)
+            self.exp()
+        else:
+            pass
+    
     # <calculo> -> LAMBDA | <com><calculo>
     def calculo(self):
-        com = [TOKEN.IDENT, TOKEN.IF, TOKEN.READ, TOKEN.WRITE, TOKEN.ABRE_CHAVES]
+        com = [TOKEN.IDENT, TOKEN.IF, TOKEN.READ, TOKEN.WRITE, TOKEN.ABRE_CHAVES, TOKEN.FOR, TOKEN.WHILE, TOKEN.RETURN]
         entrou = False
         while self.tokenLido[0] in com:
             self.com()
@@ -92,7 +244,7 @@ class Sintatico:
         if not entrou:
             pass 
 
-    # <com> -> <atrib>|<if>|<leitura>|<impressao>|<bloco>
+    # <com> -> <atrib>|<if>|<leitura>|<escrita>|<bloco>|<for>|<while>|<retorna>|<call>
     def com(self):
         if self.tokenLido[0] == TOKEN.IDENT:
             self.atrib()
@@ -101,13 +253,22 @@ class Sintatico:
         elif self.tokenLido[0] == TOKEN.READ:
             self.leitura()
         elif self.tokenLido[0] == TOKEN.WRITE:
-            self.impressao()
-        else:
+            self.escrita()
+        elif self.tokenLido[0] == TOKEN.ABRE_CHAVES:
             self.bloco()
+        elif self.tokenLido[0] == TOKEN.FOR:
+            self._for()
+        elif self.tokenLido[0] == TOKEN.WHILE:
+            self._while()
+        elif self.tokenLido[0] == TOKEN.RETURN:
+            self.retorna()
+        else:
+            self.call()
 
-    # <atrib> -> ident = <exp> ;
+    # <atrib> -> ident <opcIndice> = <exp> ;
     def atrib(self):
         self.consome(TOKEN.IDENT)
+        self.opcIndice()
         self.consome(TOKEN.ATRIBUICAO)
         self.exp()
         self.consome(TOKEN.PONTO_VIRGULA)
@@ -258,8 +419,8 @@ class Sintatico:
             self.consome(TOKEN.MULTIPLICACAO)
             self.uno()
             self.restoMult()
-        elif self.tokenLido[0] == TOKEN.MODULO:
-            self.consome(TOKEN.MODULO)
+        elif self.tokenLido[0] == TOKEN.MOD:
+            self.consome(TOKEN.MOD)
             self.uno()
             self.restoMult()
         else:
