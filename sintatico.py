@@ -71,7 +71,7 @@ class Sintatico:
 
     # <params> -> <tipo> ident <restoParams> | LAMBDA
     def params(self):
-        if self.tokenLido[0] == TOKEN.STRING:
+        if self.tokenLido[0] in [TOKEN.STRING, TOKEN.INT, TOKEN.FLOAT]:
             self.tipo()
             self.consome(TOKEN.IDENT)
             self.restoParams()
@@ -97,7 +97,7 @@ class Sintatico:
 
     # <declaracoes> -> <declara> <declaracoes> | LAMBDA
     def declaracoes(self):
-        if self.tokenLido[0] == TOKEN.STRING:
+        if self.tokenLido[0] in [TOKEN.STRING, TOKEN.INT, TOKEN.FLOAT]:
             self.declara()
             self.declaracoes()
         else:
