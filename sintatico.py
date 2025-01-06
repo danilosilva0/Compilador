@@ -58,14 +58,13 @@ class Sintatico:
         self.consome(TOKEN.FUNCTION)
         nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
-        self.semantico.declara(nome, "function")
-        self.consome(TOKEN.ABRE_PARENTESES)
-        self.params()
-        self.consome(TOKEN.FECHA_PARENTESES)
-        self.tipoResultado()
+        self.tipoResultado()  # Isso já processa o tipo da função
+        tipo_funcao = self.semantico.verifica_declaracao(nome)  # Salva o tipo
+        self.semantico.declara(nome, f"function-{tipo_funcao}")
         self.semantico.entra_escopo()
         self.corpo()
         self.semantico.sai_escopo()
+
 
     # <tipoResultado> -> LAMBDA | -> <tipo>
     def tipoResultado(self):
@@ -111,9 +110,12 @@ class Sintatico:
 
     # <declara> -> <tipo> <idents> ;
     def declara(self):
-        self.tipo()
-        self.idents()
-        self.consome(TOKEN.PONTO_VIRGULA)
+        tipo = self.tipo()  # Isso retorna o tipo da variável
+        nome = self.tokenLido[1]
+        self.consome(TOKEN.IDENT)
+        self.semantico.declara(nome, tipo)  # Registra o tipo
+        self.restoIdents()
+
 
     # <idents> -> ident <restoIdents>
     def idents(self):
@@ -281,11 +283,12 @@ class Sintatico:
     def atrib(self):
         nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
-        self.semantico.verifica_declaracao(nome)
+        tipo_var = self.semantico.verifica_declaracao(nome)
         self.opcIndice()
         self.consome(TOKEN.ATRIBUICAO)
         self.exp()
         self.consome(TOKEN.PONTO_VIRGULA)
+
 
     # <if> ->  if ( <exp> ) then <com> <else_opc>
     def _if_(self):

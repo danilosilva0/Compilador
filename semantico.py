@@ -12,11 +12,11 @@ class Semantico:
         self.escopos.pop()
 
     def declara(self, nome, tipo):
-        """Declara uma variável ou função no escopo atual."""
         escopo_atual = self.escopos[-1]
         if nome in escopo_atual:
             raise Exception(f'Erro semântico: Redeclaração de "{nome}" no mesmo escopo.')
         escopo_atual[nome] = tipo
+
 
     def verifica_declaracao(self, nome):
         """Verifica se um nome foi declarado em algum escopo válido."""

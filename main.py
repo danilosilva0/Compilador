@@ -23,3 +23,4 @@ if __name__ == '__main__':
     x.inicializa()
     x.traduz()
     x.finaliza()
+    print("FOONFERRR")
