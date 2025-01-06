@@ -1,9 +1,11 @@
 from lexico import TOKEN, Lexico
+from semantico import Semantico
 
 class Sintatico:
     
     def __init__(self, lexico: Lexico):
         self.lexico = lexico
+        self.semantico = Semantico()
 
     def traduz(self):
         self.tokenLido = self.lexico.getToken()
@@ -54,12 +56,16 @@ class Sintatico:
     # <funcao> -> function ident ( <params> ) <tipoResultado> <corpo>
     def funcao(self):
         self.consome(TOKEN.FUNCTION)
+        nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
+        self.semantico.declara(nome, "function")
         self.consome(TOKEN.ABRE_PARENTESES)
         self.params()
         self.consome(TOKEN.FECHA_PARENTESES)
         self.tipoResultado()
+        self.semantico.entra_escopo()
         self.corpo()
+        self.semantico.sai_escopo()
 
     # <tipoResultado> -> LAMBDA | -> <tipo>
     def tipoResultado(self):
@@ -111,14 +117,18 @@ class Sintatico:
 
     # <idents> -> ident <restoIdents>
     def idents(self):
+        nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
+        self.semantico.declara(nome, "ident") #Verificar se está correto
         self.restoIdents()
 
     # <restoIdents> -> , ident <restoIdents> | LAMBDA
     def restoIdents(self):
         if self.tokenLido[0] == TOKEN.VIRGULA:
             self.consome(TOKEN.VIRGULA)
+            nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
+            self.semantico.declara(nome, "ident")
             self.restoIdents()
         else:
             pass
@@ -189,7 +199,9 @@ class Sintatico:
     # <lista> -> ident <opcIndice> | [ <elemLista> ]
     def lista(self):
         if self.tokenLido[0] == TOKEN.IDENT:
+            nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
+            self.semantico.declara(nome, "ident")
             self.opcIndice()
         else:
             self.consome(TOKEN.ABRE_COLCHETES)
@@ -267,7 +279,9 @@ class Sintatico:
 
     # <atrib> -> ident <opcIndice> = <exp> ;
     def atrib(self):
+        nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
+        self.semantico.verifica_declaracao(nome)
         self.opcIndice()
         self.consome(TOKEN.ATRIBUICAO)
         self.exp()
@@ -330,8 +344,10 @@ class Sintatico:
     # <bloco> -> { <calculo> }
     def bloco(self):
         self.consome(TOKEN.ABRE_CHAVES)
+        self.semantico.entra_escopo() #Verificar se está correto
         self.calculo()
         self.consome(TOKEN.FECHA_CHAVES)
+        self.semantico.sai_escopo() #Verificar se está correto
         
     # <exp> -> <disj>
     def exp(self):

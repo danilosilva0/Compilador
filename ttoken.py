@@ -133,8 +133,7 @@ class TOKEN (IntEnum):
             'or': TOKEN.OR,
             'not': TOKEN.NOT,
             'int': TOKEN.INT,
-            'function': TOKEN.FUNCTION,
-            'float': TOKEN.FLOAT,
+            'function': TOKEN.FUNCTION,            'float': TOKEN.FLOAT,
             'list': TOKEN.LIST,
             'return': TOKEN.READ,
             'while': TOKEN.WHILE,
@@ -144,7 +143,7 @@ class TOKEN (IntEnum):
             'range': TOKEN.RANGE,
             'intVal': TOKEN.INTVAL,
             'floatVal': TOKEN.FLOATVAL,
-            'strVal': TOKEN.STRVAL
+            'strVal': TOKEN.STRVAL,
             
         }
         if lexema in reservadas:

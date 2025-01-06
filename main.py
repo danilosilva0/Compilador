@@ -19,7 +19,7 @@ class Tradutor:
 
 # inicia a traducao
 if __name__ == '__main__':
-    x = Tradutor('ordenaBaBA.txt')
+    x = Tradutor('bolha.txt')
     x.inicializa()
     x.traduz()
     x.finaliza()
