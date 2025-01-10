@@ -133,7 +133,7 @@ class Lexico:
                     return (TOKEN.ERRO, lexema, lin, col)
                 else:
                     self.ungetchar(simbolo)
-                    return (TOKEN.NUMERO, lexema, lin, col)
+                    return (TOKEN.INTVAL, lexema, lin, col)
             elif estado == 31:
                 # parte real do numero
                 if simbolo.isdigit():
@@ -150,14 +150,14 @@ class Lexico:
                     return (TOKEN.ERRO, lexema, lin, col)
                 else:
                     self.ungetchar(simbolo)
-                    return (TOKEN.NUMERO, lexema, lin, col)
+                    return (TOKEN.FLOATVAL, lexema, lin, col)
 
             elif estado == 4:
                 # strings
                 while True:
                     if simbolo == '"':
                         lexema += simbolo
-                        return (TOKEN.STRING, lexema, lin, col)
+                        return (TOKEN.STRVAL, lexema, lin, col)
                     if simbolo in ['\n', '\0']:
                         return (TOKEN.ERRO, lexema, lin, col)
                     if simbolo == '\\':  # isso é por causa do python

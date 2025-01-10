@@ -6,16 +6,19 @@ class Semantico:
     def entra_escopo(self):
         """Entra em um novo escopo."""
         self.escopos.append({})
+        pass
 
     def sai_escopo(self):
         """Sai do escopo atual."""
         self.escopos.pop()
+        pass
 
     def declara(self, nome, tipo):
         escopo_atual = self.escopos[-1]
         if nome in escopo_atual:
             raise Exception(f'Erro semântico: Redeclaração de "{nome}" no mesmo escopo.')
-        escopo_atual[nome] = tipo
+        escopo_atual[nome] = tipo  # Registra o tipo da variável ou função
+
 
 
     def verifica_declaracao(self, nome):
@@ -23,9 +26,16 @@ class Semantico:
         for escopo in reversed(self.escopos):
             if nome in escopo:
                 return escopo[nome]
+        print(f'Erro semântico: "{nome}" não foi declarado.')
         raise Exception(f'Erro semântico: "{nome}" não foi declarado.')
 
     def verifica_tipo(self, tipo_esperado, tipo_real):
         """Verifica compatibilidade de tipos em operações ou atribuições."""
         if tipo_esperado != tipo_real:
             raise Exception(f'Erro semântico: Tipo incompatível. Esperado {tipo_esperado}, mas recebido {tipo_real}.')
+    
+    def obter_tipo_token(self, ident):
+        for escopo in self.escopos:
+            if ident in escopo:
+                return escopo[ident]
+        return None

@@ -19,8 +19,11 @@ class Tradutor:
 
 # inicia a traducao
 if __name__ == '__main__':
-    x = Tradutor('bolha.txt')
-    x.inicializa()
-    x.traduz()
-    x.finaliza()
-    print("FOONFERRR")
+    try:
+        x = Tradutor('bolha.txt')
+        x.inicializa()
+        x.traduz()
+        x.finaliza()
+        print("FOONFERRR")
+    except Exception as e:
+        print(e)
