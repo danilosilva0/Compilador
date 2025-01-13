@@ -24,6 +24,5 @@ if __name__ == '__main__':
         x.inicializa()
         x.traduz()
         x.finaliza()
-        print("FOONFERRR")
     except Exception as e:
         print(e)

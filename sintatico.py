@@ -1,6 +1,9 @@
 from lexico import TOKEN, Lexico
 from semantico import Semantico
 
+# Correção do tipo da variável
+# Verificar os tipos
+
 class Sintatico:
     
     def __init__(self, lexico: Lexico):
@@ -475,9 +478,6 @@ class Sintatico:
             
     # <folha> -> intVal | floatVal | strVal | <call> | <lista> | ( <exp> ) 
     def folha(self):
-        tipo = self.semantico.obter_tipo_token(self.tokenLido[1])
-        if tipo != None:
-            self.tokenLido = (tipo, self.tokenLido[1], self.tokenLido[2], self.tokenLido[3])
 
         if self.tokenLido[0] == TOKEN.INTVAL:
             self.consome(TOKEN.INTVAL)
@@ -487,7 +487,15 @@ class Sintatico:
             self.consome(TOKEN.STRVAL)
         elif self.tokenLido[0] == TOKEN.ABRE_COLCHETES:
             self.lista()
-        elif self.tokenLido[0] == TOKEN.IDENT:
+        elif self.tokenLido[0] == TOKEN.ABRE_PARENTESES:
+            self.consome(TOKEN.ABRE_PARENTESES)
+            self.exp()
+            self.consome(TOKEN.FECHA_PARENTESES)
+            
+        else:
+            tipo = self.semantico.obter_tipo_token(self.tokenLido[1])
+            if tipo != None:
+                self.tokenLido = (tipo, self.tokenLido[1], self.tokenLido[2], self.tokenLido[3])
             i = self.lexico.indiceFonte
             token = self.lexico.getToken()
             # 1 - acessar o indiceFonte e calcular o tamanho
@@ -502,10 +510,6 @@ class Sintatico:
                     self.lexico.ungetchar(token[1])
                 # <lista>
                 self.lista()
-        else:
-            self.consome(TOKEN.ABRE_PARENTESES)
-            self.exp()
-            self.consome(TOKEN.FECHA_PARENTESES)
 
     # <call> -> ident ( <lista_outs_opc> )
     def call(self):
