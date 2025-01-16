@@ -1,7 +1,12 @@
+from ttoken import TOKEN
 class Semantico:
     def __init__(self):
-        self.tabela_simbolos = {}  # Tabela de símbolos para controle de variáveis e funções
+        #len, trunc, str2Num, num2Str
         self.escopos = [{}]  # Pilha de escopos (começa com o escopo global)
+        self.declara("len", (TOKEN.FUNCTION, [(None, (None, True)), ("retorno", (TOKEN.INT, False))]))
+        self.declara("trunc", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.INT, False))]))
+        self.declara("str2Num", (TOKEN.FUNCTION, [(None, (TOKEN.STRING, False)), ("retorno", (TOKEN.FLOAT, False))]))
+        self.declara("num2Str", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.STRING, False))]))
 
     def entra_escopo(self):
         """Entra em um novo escopo."""

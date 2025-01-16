@@ -60,13 +60,13 @@ class Sintatico:
     def funcao(self):
         self.consome(TOKEN.FUNCTION)  # Consome 'function'
         nome = self.tokenLido[1]  # Captura o identificador (nome da função)
-        self.semantico.declara(nome, TOKEN.IDENT)  # Atualiza com o tipo da função
-        self.semantico.entra_escopo()  # Entra no escopo local da função
         self.consome(TOKEN.IDENT)  # Consome o identificador
         self.consome(TOKEN.ABRE_PARENTESES)  # Consome '('
-        self.params()  # Chama a produção 'params' para processar os parâmetros
+        args = self.params()  # Chama a produção 'params' para processar os parâmetros
         self.consome(TOKEN.FECHA_PARENTESES)  # Consome ')'
-        self.tipoResultado()  # Obtém o tipo da função (após '->' ou vazio)
+        args.append(self.tipoResultado())  # Obtém o tipo da função (após '->' ou vazio)
+        self.semantico.declara(nome, (TOKEN.FUNCTION, args))  # Atualiza com o tipo da função
+        self.semantico.entra_escopo()  # Entra no escopo local da função
         self.corpo()  # Processa o corpo da função
         self.semantico.sai_escopo()  # Sai do escopo local
 
@@ -74,9 +74,9 @@ class Sintatico:
     def tipoResultado(self):
         if self.tokenLido[0] == TOKEN.SETA:
             self.consome(TOKEN.SETA)  # Consome '->'
-            return self.tipo()  # Retorna o tipo após '->'
+            return ("retorno", self.tipo())  # Retorna o tipo após '->'
         else:
-            pass  # Caso não haja '->', a função é do tipo 'void'
+            return ("retorno", None)
 
 
     # <params> -> <tipo> ident <restoParams> | LAMBDA
@@ -85,18 +85,23 @@ class Sintatico:
             tipo = self.tipo()
             nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
-            self.semantico.declara(nome, tipo)
-            self.restoParams()
+            args = list()
+            args.append((nome, tipo))
+            self.restoParams(args)
+            return args
         else:
             pass
 
+
     # <restoParams> -> LAMBDA | , <tipo> ident <restoParams>
-    def restoParams(self):
+    def restoParams(self, args: list):
         if self.tokenLido[0] == TOKEN.VIRGULA:
             self.consome(TOKEN.VIRGULA)
-            self.tipo()
+            tipo = self.tipo()
+            nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
-            self.restoParams()
+            args.append((nome, tipo))
+            self.restoParams(args)
         else:
             pass
 
@@ -118,25 +123,28 @@ class Sintatico:
     # <declara> -> <tipo> <idents> ;
     def declara(self):
         tipo = self.tipo()  # Isso retorna o tipo da variável
-        self.idents(tipo)
+        variaveis = self.idents(list())
+        for var in variaveis:
+            self.semantico.declara(var, tipo)
         self.consome(TOKEN.PONTO_VIRGULA)
 
 
     # <idents> -> ident <restoIdents>
-    def idents(self, tipo):
+    def idents(self, variaveis: list):
         nome = self.tokenLido[1]
+        variaveis.append(nome)
         self.consome(TOKEN.IDENT)
-        self.semantico.declara(nome, tipo) #Verificar se está correto
-        self.restoIdents(tipo)
+        self.restoIdents(variaveis)
+        return variaveis
 
     # <restoIdents> -> , ident <restoIdents> | LAMBDA
-    def restoIdents(self, tipo):
+    def restoIdents(self, variaveis: list):
         if self.tokenLido[0] == TOKEN.VIRGULA:
             self.consome(TOKEN.VIRGULA)
             nome = self.tokenLido[1]
+            variaveis.append(nome)
             self.consome(TOKEN.IDENT)
-            self.semantico.declara(nome, tipo)
-            self.restoIdents(tipo)
+            self.restoIdents(variaveis)
         else:
             pass
 
@@ -144,13 +152,13 @@ class Sintatico:
     def tipo(self):
         if self.tokenLido[0] == TOKEN.STRING:
             self.consome(TOKEN.STRING)
-            return self.opcLista(TOKEN.STRING)  # Retorna 'string' ou 'string[list]'
+            return (TOKEN.STRING, self.opcLista(TOKEN.STRING))  # Retorna 'string' ou 'string[list]'
         elif self.tokenLido[0] == TOKEN.INT:
             self.consome(TOKEN.INT)
-            return self.opcLista(TOKEN.INTVAL)  # Retorna 'int' ou 'int[list]'
+            return (TOKEN.INT, self.opcLista(TOKEN.INT))  # Retorna 'int' ou 'int[list]'
         elif self.tokenLido[0] == TOKEN.FLOAT:
             self.consome(TOKEN.FLOAT)
-            return self.opcLista(TOKEN.FLOATVAL)  # Retorna 'float' ou 'float[list]'
+            return (TOKEN.FLOAT, self.opcLista(TOKEN.FLOAT))  # Retorna 'float' ou 'float[list]'
 
 
     # <opcLista> -> [ list ] | LAMBDA
@@ -159,8 +167,8 @@ class Sintatico:
             self.consome(TOKEN.ABRE_COLCHETES)
             self.consome(TOKEN.LIST)
             self.consome(TOKEN.FECHA_COLCHETES)
-            return TOKEN.IDENT  # Retorna o tipo como lista
-        return tipo_base  # Retorna o tipo base, se não for lista
+            return True  # Retorna o tipo como lista
+        return False  # Retorna o tipo base, se não for lista
 
 
     # <retorna> -> return <expOpc> ;
@@ -212,10 +220,12 @@ class Sintatico:
         if self.tokenLido[0] == TOKEN.IDENT:
             nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
+            # confere tabela semantico
             self.opcIndice()
         else:
             self.consome(TOKEN.ABRE_COLCHETES)
             self.elemLista()
+            # Verifica tipo elementos lista
             self.consome(TOKEN.FECHA_COLCHETES)
 
     # <elemLista> -> LAMBDA | <elem> <restoElemLista>
@@ -269,20 +279,12 @@ class Sintatico:
     # <com> -> <atrib>|<if>|<leitura>|<escrita>|<bloco>|<for>|<while>|<retorna>|<call>
     def com(self):
         if self.tokenLido[0] == TOKEN.IDENT:
-            i = self.lexico.indiceFonte
-            token = self.lexico.getToken()
-            # 1 - acessar o indiceFonte e calcular o tamanho
-            # 2 - trocar a estrutura do token pra ter o lenth
-            if token[0] == TOKEN.ABRE_PARENTESES:
-                while self.lexico.indiceFonte > i:
-                    self.lexico.ungetchar(token[1])
-                # <call>
+            nome = self.tokenLido[1]
+            (tipo, params) = self.semantico.obter_tipo_token(nome)
+            if tipo == TOKEN.FUNCTION:
                 self.call()
                 self.consome(TOKEN.PONTO_VIRGULA)
             else:
-                while self.lexico.indiceFonte > i:
-                    self.lexico.ungetchar(token[1])
-                # <lista>
                 self.atrib()
         elif self.tokenLido[0] == TOKEN.IF:
             self._if_()
@@ -296,16 +298,14 @@ class Sintatico:
             self._for_()
         elif self.tokenLido[0] == TOKEN.WHILE:
             self._while_()
-        elif self.tokenLido[0] == TOKEN.RETURN:
-            self.retorna()
         else:
-            self.call()
+            self.retorna()
 
     # <atrib> -> ident <opcIndice> = <exp> ;
     def atrib(self):
         nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
-        tipo_var = self.semantico.verifica_declaracao(nome)
+        self.semantico.verifica_declaracao(nome)
         self.opcIndice()
         self.consome(TOKEN.ATRIBUICAO)
         self.exp()
@@ -474,24 +474,26 @@ class Sintatico:
             self.consome(TOKEN.SUBTRACAO)
             self.uno()
         else:
-            self.folha()
+            return self.folha()
             
     # <folha> -> intVal | floatVal | strVal | <call> | <lista> | ( <exp> ) 
     def folha(self):
-
         if self.tokenLido[0] == TOKEN.INTVAL:
             self.consome(TOKEN.INTVAL)
+            return TOKEN.INT
         elif self.tokenLido[0] == TOKEN.FLOATVAL:
             self.consome(TOKEN.FLOATVAL)
+            return TOKEN.FLOAT
         elif self.tokenLido[0] == TOKEN.STRVAL:
             self.consome(TOKEN.STRVAL)
+            return TOKEN.STRING
         elif self.tokenLido[0] == TOKEN.ABRE_COLCHETES:
-            self.lista()
+            return self.lista()
         elif self.tokenLido[0] == TOKEN.ABRE_PARENTESES:
             self.consome(TOKEN.ABRE_PARENTESES)
-            self.exp()
+            tipo = self.exp() # !!!! IMPLEMENTAR RETORNO
             self.consome(TOKEN.FECHA_PARENTESES)
-            
+            return tipo
         else:
             tipo = self.semantico.obter_tipo_token(self.tokenLido[1])
             if tipo != None:
@@ -515,13 +517,14 @@ class Sintatico:
     def call(self):
         nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
-        self.semantico.declara(nome, TOKEN.IDENT)
         self.consome(TOKEN.ABRE_PARENTESES)
-        self.lista_outs_opc()
+        (_, params) = self.semantico.obter_tipo_token(nome)
+        # params = () 
+        self.lista_outs_opc(params)
         self.consome(TOKEN.FECHA_PARENTESES)
 
     # <lista_outs_opc> -> <lista_outs> | LAMBDA
-    def lista_outs_opc(self):
+    def lista_outs_opc(self, params):
         folha = [
             TOKEN.INTVAL,
             TOKEN.FLOATVAL,
