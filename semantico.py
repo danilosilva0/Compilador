@@ -5,8 +5,8 @@ class Semantico:
         self.escopos = [{}]  # Pilha de escopos (começa com o escopo global)
         self.declara("len", (TOKEN.FUNCTION, [(None, (None, True)), ("retorno", (TOKEN.INT, False))]))
         self.declara("trunc", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.INT, False))]))
-        self.declara("str2Num", (TOKEN.FUNCTION, [(None, (TOKEN.STRING, False)), ("retorno", (TOKEN.FLOAT, False))]))
-        self.declara("num2Str", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.STRING, False))]))
+        self.declara("str2num", (TOKEN.FUNCTION, [(None, (TOKEN.STRING, False)), ("retorno", (TOKEN.FLOAT, False))]))
+        self.declara("num2str", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.STRING, False))]))
 
     def entra_escopo(self):
         """Entra em um novo escopo."""
@@ -39,8 +39,12 @@ class Semantico:
         if tipo_esperado != tipo_real:
             raise Exception(f'Erro semântico: Tipo incompatível. Esperado {tipo_esperado}, mas recebido {tipo_real}.')
     
-    def obter_tipo_token(self, ident):
-        for escopo in self.escopos:
-            if ident in escopo:
-                return escopo[ident]
-        return None
+    def obter_tipo_token(self, ident, linha, coluna):
+        try:
+            for escopo in self.escopos:
+                if ident in escopo:
+                    return escopo[ident]
+            raise Exception(f'Variável "{ident}" não declarada. Linha: {linha}, coluna: {coluna}')
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
+            exit(1)
