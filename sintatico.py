@@ -4,6 +4,9 @@ from semantico import Semantico
 # Correção do tipo da variável
 # Verificar os tipos
 
+# verificar tipo do indice no "for" junto com a lista
+# while deve ter a expressão válida 
+
 class Sintatico:
     
     def __init__(self, lexico: Lexico):
@@ -155,17 +158,17 @@ class Sintatico:
     def tipo(self):
         if self.tokenLido[0] == TOKEN.STRING:
             self.consome(TOKEN.STRING)
-            return (TOKEN.STRING, self.opcLista(TOKEN.STRING))  # Retorna 'string' ou 'string[list]'
+            return (TOKEN.STRING, self.opcLista())  # Retorna 'string' ou 'string[list]'
         elif self.tokenLido[0] == TOKEN.INT:
             self.consome(TOKEN.INT)
-            return (TOKEN.INT, self.opcLista(TOKEN.INT))  # Retorna 'int' ou 'int[list]'
+            return (TOKEN.INT, self.opcLista())  # Retorna 'int' ou 'int[list]'
         elif self.tokenLido[0] == TOKEN.FLOAT:
             self.consome(TOKEN.FLOAT)
-            return (TOKEN.FLOAT, self.opcLista(TOKEN.FLOAT))  # Retorna 'float' ou 'float[list]'
+            return (TOKEN.FLOAT, self.opcLista())  # Retorna 'float' ou 'float[list]'
 
 
     # <opcLista> -> [ list ] | LAMBDA
-    def opcLista(self, tipo_base):
+    def opcLista(self):
         if self.tokenLido[0] == TOKEN.ABRE_COLCHETES:
             self.consome(TOKEN.ABRE_COLCHETES)
             self.consome(TOKEN.LIST)
@@ -294,7 +297,7 @@ class Sintatico:
     def com(self):
         if self.tokenLido[0] == TOKEN.IDENT:
             nome = self.tokenLido[1]
-            (tipo, params) = self.semantico.obter_tipo_token(nome, self.tokenLido[2], self.tokenLido[3])
+            (tipo, _) = self.semantico.obter_tipo_token(nome, self.tokenLido[2], self.tokenLido[3])
             if tipo == TOKEN.FUNCTION:
                 self.call()
                 self.consome(TOKEN.PONTO_VIRGULA)
@@ -409,7 +412,7 @@ class Sintatico:
 
     # <conj> -> <nao> <restoConj>
     def conj(self):
-        aux = self.nao() # FIXME: Verificar se precisa
+        aux = self.nao()
         self.restoConj()
         return aux
 
@@ -539,6 +542,8 @@ class Sintatico:
             if param[1] == paramsPassado[i]:
                 continue
             elif param[1][0] is None and param[1][1] == paramsPassado[i][1]:
+                continue
+            elif param[1][0] == TOKEN.FLOAT and (paramsPassado[i][0] == TOKEN.INT and param[1][1] == paramsPassado[i][1]):
                 continue
             else:
                 raise Exception(f'Parâmetros inválidos. Função: "{nome}", linha: {self.tokenLido[2]}, coluna: {self.tokenLido[3]}')
