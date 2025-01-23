@@ -4,7 +4,7 @@ from semantico import Semantico
 # Correção do tipo da variável
 # Verificar os tipos
 
-# verificar tipo do indice no "for" junto com a lista
+# TODO: implementar tabela de comparação de tipos no semantico (tipo1/tipo2)
 # while deve ter a expressão válida 
 
 class Sintatico:
@@ -202,25 +202,31 @@ class Sintatico:
     # <for> -> for ident in <range> do <com>
     def _for_(self):
         self.consome(TOKEN.FOR)
+        nome = self.tokenLido[1]
         self.consome(TOKEN.IDENT)
-        # TODO: Verificar se tem que verificar o tipo
+        tipo = self.semantico.obter_tipo_token(nome, self.tokenLido[2], self.tokenLido[3])
         self.consome(TOKEN.IN)
-        self.range()
+        colunaTipo = self.tokenLido[3]
+        tipoRange = self.range()
+        if tipo[0] != tipoRange[0] or not tipoRange[1]:
+            raise Exception(f'Parâmetros inválidos. "FOR", era esperado "{TOKEN.msg(tipoRange[0])}" mas veio "{TOKEN.msg(tipo[0])}". Linha: {self.tokenLido[2]}, coluna: {colunaTipo}')
         self.consome(TOKEN.DO)
         self.com()
 
     # <range> -> <lista> | range ( <exp> , <exp> <opcRange> )
     def range(self):
         if self.tokenLido[0] == TOKEN.IDENT:
-            self.lista()
+            return self.lista()
         else:
             self.consome(TOKEN.RANGE)
             self.consome(TOKEN.ABRE_PARENTESES)
+            # TODO: Não pode ser string
             self.exp()
             self.consome(TOKEN.VIRGULA)
             self.exp()
             self.opcRange()
             self.consome(TOKEN.FECHA_PARENTESES)
+            return (TOKEN.INT, True)
 
     # <lista> -> ident <opcIndice> | [ <elemLista> ]
     def lista(self):
@@ -261,13 +267,13 @@ class Sintatico:
     def elem(self):
         if self.tokenLido[0] == TOKEN.INTVAL:
             self.consome(TOKEN.INTVAL)
-            return TOKEN.INTVAL
+            return (TOKEN.INTVAL, False)
         elif self.tokenLido[0] == TOKEN.FLOATVAL:
             self.consome(TOKEN.FLOATVAL)
-            return TOKEN.FLOATVAL
+            return (TOKEN.FLOATVAL, False)
         elif self.tokenLido[0] == TOKEN.STRVAL:
             self.consome(TOKEN.STRVAL)
-            return TOKEN.STRVAL
+            return (TOKEN.STRVAL, False)
         else:
             nome = self.tokenLido[1]
             self.consome(TOKEN.IDENT)
@@ -469,14 +475,15 @@ class Sintatico:
     # <mult> -> <uno> <restoMult>
     def mult(self):
         aux = self.uno()
-        self.restoMult()
-        return aux
+        aux2 = self.restoMult(aux)
+        return aux2
 
     # <restoMult> -> LAMBDA | / <uno> <restoMult> | * <uno> <restoMult> | % <uno> 
-    def restoMult(self):
+    def restoMult(self, tipo1):
         if self.tokenLido[0] == TOKEN.DIVISAO:
             self.consome(TOKEN.DIVISAO)
-            self.uno()
+            tipo2 = self.uno()
+            # TODO: implementar tabela de comparação de tipos no semantico (tipo1/tipo2)
             self.restoMult()
         elif self.tokenLido[0] == TOKEN.MULTIPLICACAO:
             self.consome(TOKEN.MULTIPLICACAO)
@@ -487,7 +494,7 @@ class Sintatico:
             self.uno()
             self.restoMult()
         else:
-            pass
+            return tipo1
 
     # <uno> -> + <uno> | - <uno> | <folha>
     def uno(self):
