@@ -8,6 +8,9 @@ class Semantico:
         self.declara("str2num", (TOKEN.FUNCTION, [(None, (TOKEN.STRING, False)), ("retorno", (TOKEN.FLOAT, False))]))
         self.declara("num2str", (TOKEN.FUNCTION, [(None, (TOKEN.FLOAT, False)), ("retorno", (TOKEN.STRING, False))]))
 
+        # Tabela de operações usando apenas tokens para o operador
+        self.tabelaOperacoes = TOKEN.tabelaOperacoes()
+
     def entra_escopo(self):
         """Entra em um novo escopo."""
         self.escopos.append({})
@@ -48,3 +51,18 @@ class Semantico:
         except Exception as e:
             print(f"Erro inesperado: {e}")
             exit(1)
+            
+    def verificaOperacao(self, e1, op, e2=None):
+        if e2 is None:
+            # Operação unária
+            entrada = frozenset({op, e1[0]})  # Use apenas o primeiro elemento
+        else:
+            # Operação binária
+            entrada = frozenset({e1[0], op, e2[0]})  # Use apenas os primeiros elementos de e1 e e2
+
+        if entrada in self.tabelaOperacoes:
+            teste = self.tabelaOperacoes[entrada]
+            return teste
+        else:
+            msg = f"Operação inválida: {e1} {op} {e2}" if e2 else f"Operação inválida: {op} {e1}"
+            raise Exception(msg)
